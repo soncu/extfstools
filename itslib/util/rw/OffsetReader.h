@@ -1,6 +1,6 @@
 #ifndef _UTIL_RW_OFFSETREADER_H__
 #define _UTIL_RW_OFFSETREADER_H__
-
+#include <inttypes.h>
 // very low overhead, only adds baseoffset to positions.
 // does not check size.
 class OffsetReader : public ReadWriter {
@@ -12,7 +12,7 @@ public:
         : _r(r), _baseoff(off), _size(size)
     {
         if (size > _r->size()-_baseoff) {
-            printf("off=%08llx, size=%08llx,  src: %08llx\n", off, size, _r->size());
+            printf("off=%08" PRId64 ", size=%08" PRId64 ",  src: %08" PRId64 "\n", off, size, _r->size());
             throw "Offsetreader larger then source disk";
         }
     }

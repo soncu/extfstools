@@ -15,7 +15,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <sys/stat.h>
-
+#include <inttypes.h>
 //  ~/gitprj/repos/linux/fs/ext2/ext2.h
 //  todo: add 64bit support from ext4
 // todo: create ExtentsFileReader and BlocksFileReader
@@ -326,7 +326,7 @@ struct ExtentLeaf : ExtentNode {
     }
     virtual void dump() const
     {
-        printf("blk:%08x, l=%d, %010llx\n", ee_block, ee_len, startblock());
+        printf("blk:%08x, l=%d, %010" PRId64 "\n", ee_block, ee_len, startblock());
     }
     uint64_t startblock() const
     {
@@ -362,7 +362,7 @@ struct ExtentInternal : ExtentNode {
     }
     virtual void dump() const
     {
-        printf("blk:%08x, [%d] %010llx\n", ei_block, ei_unused, leafnode());
+        printf("blk:%08x, [%d] %010" PRId64 "\n", ei_block, ei_unused, leafnode());
     }
     uint64_t leafnode() const
     {
@@ -537,7 +537,7 @@ struct Inode {
     }
     void dump() const
     {
-        printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12lld [b:%8d] F:%05x(%s) X:%08x %s\n",
+        printf("m:%06o %4d o[%5d %5d] t[%10d %10d %10d %10d]  %12" PRId64 " [b:%8d] F:%05x(%s) X:%08x %s\n",
                 i_mode, i_links_count, i_gid, i_uid, i_atime, i_ctime, i_mtime, i_dtime, datasize(), i_blocks, i_flags, fl2str(i_flags).c_str(), i_file_acl, hexdump(i_osd2, 12).c_str());
         if ((i_mode&0xf000)==EXT4_S_IFLNK && i_size<60) {
             printf("symlink: %s\n", symlink.c_str());
@@ -1125,9 +1125,9 @@ class SparseReader : public ReadWriter {
         void dump(uint64_t off) const
         {
             if (isfill)
-                printf("%llx-%llx: fill with %08x\n", off, off+ndwords*4, value);
+                printf("%" PRId64 "-%" PRId64 ": fill with %08x\n", off, off+ndwords*4, value);
             else
-                printf("%llx-%llx: copy from %llx\n", off, off+ndwords*4, offset);
+                printf("%" PRId64 "-%" PRId64 ": copy from %" PRId64 "\n", off, off+ndwords*4, offset);
         }
     };
     std::map<uint64_t, sparserecord> _map;
@@ -1219,7 +1219,7 @@ private:
 
             r->setpos(r->getpos() + chunksize-cnkhdrsize);
         }
-        printf("end of sparse: %llx\n", ofs);
+        printf("end of sparse: %" PRId64 "\n", ofs);
     }
     void copydata(uint64_t sparseofs, uint32_t ndwords, uint64_t expandedofs)
     {
@@ -1234,12 +1234,12 @@ private:
     {
         auto i= _map.upper_bound(ofs);
         if (i==_map.begin()) {
-            //printf("did not find %llx\n", ofs);
+            //printf("did not find %" PRId64 "\n", ofs);
             return _map.end();
         }
         i--;
         if (i->first + i->second.ndwords*4 < ofs) {
-            //printf("%llx outside of block: ", ofs); i->second.dump(i->first);
+            //printf("%" PRId64 " outside of block: ", ofs); i->second.dump(i->first);
             return _map.end();
         }
 
@@ -1264,7 +1264,7 @@ public:
             size_t want= std::min((uint64_t)n, i->second.ndwords*4 - (_off - i->first));
 
             if (i->second.isfill) {
-                //printf("found %llx : fill %zx bytes with %08x\n", _off, want, i->second.value);
+                //printf("found %" PRId64 " : fill %zx bytes with %08x\n", _off, want, i->second.value);
                 if (i->second.value==0 || i->second.value==0xFFFFFFFF)
                     memset(p, i->second.value, want);
                 else {
@@ -1273,7 +1273,7 @@ public:
                 }
             }
             else {
-                //printf("found %llx : %zx bytes from %llx+%llx-%llx\n", _off, want, i->second.offset, _off, i->first);
+                //printf("found %" PRId64 " : %zx bytes from %" PRId64 "+%" PRId64 "-%" PRId64 "\n", _off, want, i->second.offset, _off, i->first);
                 r->setpos(i->second.offset + _off-i->first);
                 r->read(p, want);
             }
