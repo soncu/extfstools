@@ -9,7 +9,6 @@
 #endif
 
 #ifndef _WIN32
-#include <sys/disk.h>
 #include <sys/ioctl.h>
 #endif
 
@@ -27,7 +26,7 @@ namespace ipc= boost::interprocess;
 class MmapReader : public MemoryReader {
     std::string _filename;
 
-    // helper object, used to resize the file 
+    // helper object, used to resize the file
     // before the filemap object is created
     // or after the filemap object is destroyed.
     struct file_helper {
@@ -104,16 +103,16 @@ public:
         setbuf((uint8_t*)_region.get_address(), _region.get_size());
     }
     MmapReader(const std::string& filename, readwrite_t, uint64_t size)
-        : _filename(filename), 
+        : _filename(filename),
         _help(filename, size, false, false),
-        _file(filename.c_str(), ipc::read_write), 
+        _file(filename.c_str(), ipc::read_write),
         _region(_file, ipc::read_write, 0, size)
     {
         setbuf((uint8_t*)_region.get_address(), _region.get_size());
     }
 
     MmapReader(const std::string& filename, createnew_t, uint64_t size)
-        : _filename(filename), 
+        : _filename(filename),
           _help(filename, size, true, false),
           _file(filename.c_str(), ipc::read_write),
           _region(_file, ipc::read_write, 0, size)
@@ -122,7 +121,7 @@ public:
     }
 
     MmapReader(const std::string& filename, opencreate_t, uint64_t size)
-        : _filename(filename), 
+        : _filename(filename),
           _help(filename, size, false, true),
           _file(filename.c_str(), ipc::read_write),
           _region(_file, ipc::read_write, 0, size)

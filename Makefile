@@ -12,12 +12,12 @@ clean:
 ext2rd: ext2rd.o  stringutils.o
 ext2dump: ext2dump.o stringutils.o
 
-CXXFLAGS=-g -Wall -c $(OPT) -I itslib -D_UNIX -D_NO_RAPI -I /usr/local/include -I . -std=c++11 -stdlib=libc++
+CXXFLAGS=-g -Wall -c $(OPT) -I itslib -D_UNIX -D_NO_RAPI -I /usr/include/x86_64-linux-gnu/c++/5/ -I /usr/include/c++/5/ -I . -std=c++11 -stdlib=libc++
 
 # include CDEFS from make commandline
 CXXFLAGS+=$(CDEFS) -MD
 
-LDFLAGS+=-g -Wall -L/usr/local/lib -std=c++11 -stdlib=libc++
+LDFLAGS+=-g -Wall -L/usr/local/lib -std=c++11
 
 CXX=clang++
 
@@ -25,10 +25,10 @@ CXX=clang++
 vpath .cpp itslib/src .
 
 %.o: itslib/src/%.cpp
-	$(CXX) $(CXXFLAGS) $^ -o $@ 
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) $(filter %.cpp,$^) -o $@ 
+	$(CXX) $(CXXFLAGS) $(filter %.cpp,$^) -o $@
 
 %: %.o
 	$(CXX) $(LDFLAGS) $^ -o $@

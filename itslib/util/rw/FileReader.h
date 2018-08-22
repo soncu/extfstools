@@ -12,7 +12,7 @@
 #include <sys/time.h>
 #endif
 #ifndef _WIN32
-#include <sys/disk.h>
+#include <linux/fs.h>
 #include <sys/ioctl.h>
 #endif
 
@@ -150,6 +150,8 @@ public:
         if (-1==_chsize_s(fileno(_f), off))
             throw posixerror(std::string("truncating ")+_filename);
 #else
+        if (!isreadonly())
+            flush();
         if (-1==ftruncate(fileno(_f), off)) {
             printf("err=%d\n", errno);
             throw posixerror(std::string("truncating ")+_filename);

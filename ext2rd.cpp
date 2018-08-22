@@ -162,7 +162,7 @@ struct SuperBlock  {
         s_rev_level = get32le(p);         p+=4;    // 004c;
         s_def_resuid = get16le(p);        p+=2;    // 0050;
         s_def_resgid = get16le(p);        p+=2;    // 0052;
-                                                   
+
         s_first_ino= get32le(p);          p+=4;    // 0054;
         s_inode_size= get16le(p);         p+=2;    // 0058;
         s_block_group_nr= get16le(p);     p+=2;    // 005a;
@@ -175,11 +175,11 @@ struct SuperBlock  {
         s_algo_bitmap= get32le(p);        p+=4;    // 00c8;
     }
     uint64_t blocksize() const { return 1024<<s_log_block_size; }
-    uint64_t fragsize() const { 
+    uint64_t fragsize() const {
         if (s_log_frag_size <0)
             return 1024>>(-s_log_frag_size);
         else
-            return 1024<<s_log_frag_size; 
+            return 1024<<s_log_frag_size;
     }
     uint64_t bytespergroup() const { return s_blocks_per_group*blocksize(); }
     size_t ngroups() const { return s_inodes_count/s_inodes_per_group; }
@@ -319,10 +319,10 @@ struct ExtentLeaf : ExtentNode {
     virtual void parse(const uint8_t *first)
     {
         const uint8_t *p= first;
-        ee_block        = get32le(p); p+=4; 
-        ee_len          = get16le(p); p+=2; 
-        ee_start_hi     = get16le(p); p+=2; 
-        ee_start_lo     = get32le(p); p+=4; 
+        ee_block        = get32le(p); p+=4;
+        ee_len          = get16le(p); p+=2;
+        ee_start_hi     = get16le(p); p+=2;
+        ee_start_lo     = get32le(p); p+=4;
     }
     virtual void dump() const
     {
@@ -355,10 +355,10 @@ struct ExtentInternal : ExtentNode {
     virtual void parse(const uint8_t *first)
     {
         const uint8_t *p= first;
-        ei_block        = get32le(p); p+=4; 
-        ei_leaf_lo      = get32le(p); p+=4; 
-        ei_leaf_hi      = get16le(p); p+=2; 
-        ei_unused       = get16le(p); p+=2; 
+        ei_block        = get32le(p); p+=4;
+        ei_leaf_lo      = get32le(p); p+=4;
+        ei_leaf_hi      = get16le(p); p+=2;
+        ei_unused       = get16le(p); p+=2;
     }
     virtual void dump() const
     {
@@ -856,7 +856,7 @@ void recursedirs(Ext2FileSystem&fs, uint32_t nr, std::string path, FN f)
             p+=n;
             if (n==0)
                 break;
-            // last dir record has type=0 && inde=0, 
+            // last dir record has type=0 && inde=0,
             // size is rest of block
             if (e.filetype==EXT4_FT_UNKNOWN)
                 continue;
@@ -1020,7 +1020,7 @@ struct exportdirectory : action {
         recursedirs(fs, ino, ".", [&](const DirectoryEntry& e, const std::string& path) {
             if (e.filetype==EXT4_FT_DIR) {
                 if (-1==mkdir((savepath+"/"+path+"/"+e.name).c_str(), 0777)) {
-                    perror("mkdir(savepath)");
+                    if (errno != 17) perror(("mkdir-"+savepath+"/"+path+"/"+e.name).c_str());
                 }
             }
             else if (e.filetype==EXT4_FT_REG_FILE) {
@@ -1250,7 +1250,7 @@ private:
     {
         uint8_t b[4];  *(uint32_t*)b= val;
 
-        while (n--) 
+        while (n--)
             *p++ = b[(rot++)&3];
     }
 public:
@@ -1343,7 +1343,7 @@ int main(int argc,char**argv)
             case 'd': actions.push_back(boost::make_shared<dumpfs>()); break;
             case 'o': offsets.push_back(getintarg(argv, i, argc)); break;
             case 'B': openasblockdev= true; break;
-            case 'b': 
+            case 'b':
                       {
                       std::string arg= getstrarg(argv,i,argc);
                       char *q;
