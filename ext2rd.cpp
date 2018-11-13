@@ -1085,6 +1085,8 @@ struct exportinode : action {
         return true;
       });
       w.truncate(i.datasize());
+      chmod(savepath.c_str(), i.i_mode);
+      chown(savepath.c_str(), i.i_uid, i.i_gid);
     }
   }
 };
