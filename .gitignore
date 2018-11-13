@@ -1,0 +1,4 @@
+*.o
+*.d
+ext2dump
+ext2rd
