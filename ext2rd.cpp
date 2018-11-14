@@ -17,6 +17,8 @@
 #include <boost/function.hpp>
 #include <sys/stat.h>
 #include <inttypes.h>
+#include <sys/types.h>
+#include <utime.h>
 //  ~/gitprj/repos/linux/fs/ext2/ext2.h
 //  todo: add 64bit support from ext4
 // todo: create ExtentsFileReader and BlocksFileReader
@@ -1079,14 +1081,34 @@ struct exportinode : action {
   void perform(Ext2FileSystem &fs) override {
     const Inode &i = fs.getinode(nr);
     if (!i._empty) {
-      FileReader w(savepath, FileReader::opencreate);
-      i.enumblocks(fs.super, [&](const uint8_t *first) -> bool {
-        w.write(first, fs.super.blocksize());
-        return true;
-      });
-      w.truncate(i.datasize());
-      chmod(savepath.c_str(), i.i_mode);
-      chown(savepath.c_str(), i.i_uid, i.i_gid);
+      printf("%s\n", savepath.c_str());
+
+      struct timeval times[2];
+      times[0].tv_sec = i.i_atime;
+      times[0].tv_usec = 0;
+      times[1].tv_sec = i.i_mtime;
+      times[1].tv_usec = 0;
+
+      if((i.i_mode & 0xf000) == EXT4_S_IFLNK ) {
+        symlink(i.symlink.c_str(), savepath.c_str());
+        lutimes(savepath.c_str(), times);
+        lchmod(savepath.c_str(), i.i_mode);
+        if(lchown(savepath.c_str(), i.i_uid, i.i_gid!=0)) {
+          printf("lchown failed: %s\n", strerror(errno));
+        }
+      } else {
+        FileReader w(savepath, FileReader::opencreate);
+        i.enumblocks(fs.super, [&](const uint8_t *first) -> bool {
+          w.write(first, fs.super.blocksize());
+          return true;
+        });
+        w.truncate(i.datasize());
+        utimes(savepath.c_str(), times);
+        chmod(savepath.c_str(), i.i_mode);
+        if(chown(savepath.c_str(), i.i_uid, i.i_gid)!=0) {
+          printf("chown failed: %s\n", strerror(errno));
+        }
+      }
     }
   }
 };
@@ -1142,7 +1164,7 @@ struct exportdirectory : action {
           if (errno != 17)
             perror(("mkdir-" + savepath + "/" + path + "/" + e.name).c_str());
         }
-      } else if (e.filetype == EXT4_FT_REG_FILE) {
+      } else if (e.filetype == EXT4_FT_REG_FILE || e.filetype == EXT4_FT_SYMLINK) {
         exportinode byino(e.inode, savepath + "/" + path + "/" + e.name);
         byino.perform(fs);
       }
