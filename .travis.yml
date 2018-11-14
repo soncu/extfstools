@@ -7,4 +7,6 @@ addons:
       - libboost-dev
 
 script:
+- ./autogen.sh
+- ./configure
 - make

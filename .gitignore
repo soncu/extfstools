@@ -2,3 +2,17 @@
 *.d
 ext2dump
 ext2rd
+
+aclocal.m4
+configure
+config.*
+compile
+depcomp
+install-sh
+Makefile
+Makefile.*
+missing
+stamp-h1
+autom4te.cache
+.deps/
+.dirstamp
