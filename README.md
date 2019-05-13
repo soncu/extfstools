@@ -12,6 +12,19 @@ This will export the entire filesystem to 'savedir'
 
     ext2rd  system.img  ./:savedir
 
+BUILD
+=====
+
+As a prerequisite, install `autoreconf` and `libboost-all-dev`.
+
+Then run the following commands:
+
+```
+./autogen.sh
+./configure
+make
+```
+
 ext2rd
 ======
 
