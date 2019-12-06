@@ -17,11 +17,18 @@ BUILD
 
 As a prerequisite, install `autoreconf` and `libboost-all-dev`.
 
+sudo apt-get install autoconf
+
+sudo apt-get install libboost-all-dev
+
+
 Then run the following commands:
 
 ```
 ./autogen.sh
 ./configure
+cd itslibs/src; g++ -v -c -I .. -std=c++11 stringutils.cpp; cd ../..
+#add "-std=c++11" to Makefile/CXXFLAGS
 make
 ```
 
